@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 from collections import defaultdict
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
@@ -132,3 +133,46 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return False
         # Put Other non rate limited checks here
         return True
+
+
+class UsageTrackingMiddleware(BaseHTTPMiddleware):
+    """Middleware to track API usage for SaaS billing."""
+
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
+        """Track usage metrics for billing purposes."""
+        start_time = time.time()
+
+        # Get user from request (placeholder implementation)
+        user_id = self._get_user_from_request(request)
+
+        # Process request
+        response = await call_next(request)
+
+        # Calculate processing time
+        processing_time = time.time() - start_time
+
+        # Track usage if user is authenticated
+        if user_id:
+            await self._track_usage(request, response, user_id, processing_time)
+
+        return response
+
+    def _get_user_from_request(self, request: Request) -> str | None:
+        """Extract user ID from request."""
+        # This should be implemented based on your authentication system
+        # For now, return a placeholder
+        return 'placeholder_user_id'
+
+    async def _track_usage(
+        self,
+        request: Request,
+        response: Response,
+        user_id: str,
+        processing_time: float,
+    ):
+        """Track usage metrics."""
+        # This would integrate with your subscription system
+        # For now, this is a placeholder implementation
+        pass
